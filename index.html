@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ジャンケン学習アプリ</title>
+  <style>
+    body {
+      font-family: "Hiragino Maru Gothic ProN", "Comic Sans MS", sans-serif;
+      text-align: center;
+      background-color: #f9f9f9;
+      margin: 0;
+      padding: 20px;
+    }
+    h1 {
+      color: #333;
+    }
+    #computerHand {
+      font-size: 3rem;
+      margin: 20px 0;
+    }
+    .buttons {
+      margin: 20px;
+    }
+    button {
+      font-size: 2rem;
+      padding: 15px 30px;
+      margin: 10px;
+      border: none;
+      border-radius: 12px;
+      cursor: pointer;
+      background-color: #4caf50;
+      color: white;
+    }
+    button:hover {
+      opacity: 0.8;
+    }
+    #result {
+      font-size: 2rem;
+      margin-top: 20px;
+      font-weight: bold;
+      color: #222;
+    }
+  </style>
+</head>
+<body>
+  <h1>ジャンケンをおぼえよう！</h1>
+  <p>👆 どれをだすと　かてるかな？</p>
+  <div id="computerHand">❓</div>
+  
+  <div class="buttons">
+    <button onclick="play('グー')">✊ グー</button>
+    <button onclick="play('チョキ')">✌️ チョキ</button>
+    <button onclick="play('パー')">🖐 パー</button>
+  </div>
+  
+  <div id="result"></div>
+
+  <script>
+    const hands = ["グー", "チョキ", "パー"];
+    let computerChoice = "";
+
+    // 初期表示：ランダムに手を出す
+    function newRound() {
+      computerChoice = hands[Math.floor(Math.random() * hands.length)];
+      let emoji = computerChoice === "グー" ? "✊" : computerChoice === "チョキ" ? "✌️" : "🖐";
+      document.getElementById("computerHand").textContent = emoji + " " + computerChoice;
+      document.getElementById("result").textContent = "";
+    }
+
+    function play(playerChoice) {
+      let resultText = "";
+      if (playerChoice === computerChoice) {
+        resultText = "あいこ 😐";
+      } else if (
+        (playerChoice === "グー" && computerChoice === "チョキ") ||
+        (playerChoice === "チョキ" && computerChoice === "パー") ||
+        (playerChoice === "パー" && computerChoice === "グー")
+      ) {
+        resultText = "かち！ 🎉";
+      } else {
+        resultText = "まけ 😢";
+      }
+      document.getElementById("result").textContent = resultText;
+      setTimeout(newRound, 1500); // 1.5秒後に次の勝負
+    }
+
+    // 最初の手
+    newRound();
+  </script>
+</body>
+</html>
