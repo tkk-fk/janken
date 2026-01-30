@@ -3,90 +3,308 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ジャンケン学習アプリ</title>
+  <title>にこにこ ジャンケン</title>
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.5.1/dist/confetti.browser.min.js"></script>
   <style>
+    :root {
+      --goo-color: #ff5252;
+      --choki-color: #ffc107;
+      --pa-color: #2196f3;
+      --bg-color: #fffde7;
+    }
+
     body {
-      font-family: "Hiragino Maru Gothic ProN", "Comic Sans MS", sans-serif;
+      font-family: "Hiragino Maru Gothic ProN", "Yu Gothic", sans-serif;
       text-align: center;
-      background-color: #f9f9f9;
+      background-color: var(--bg-color);
       margin: 0;
+      padding: 10px;
+      user-select: none;
+    }
+
+    .container {
+      background: white;
+      border-radius: 30px;
       padding: 20px;
+      box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+      max-width: 600px;
+      margin: 10px auto;
+      border: 8px solid #ffd54f;
     }
-    h1 {
-      color: #333;
-    }
-    #computerHand {
-      font-size: 3rem;
-      margin: 20px 0;
-    }
-    .buttons {
-      margin: 20px;
-    }
-    button {
-      font-size: 2rem;
+
+    h1 { color: #f57c00; font-size: 1.8rem; }
+
+    .menu-btn {
+      font-size: 1.5rem;
       padding: 15px 30px;
       margin: 10px;
       border: none;
-      border-radius: 12px;
+      border-radius: 50px;
       cursor: pointer;
-      background-color: #4caf50;
       color: white;
-    }
-    button:hover {
-      opacity: 0.8;
-    }
-    #result {
-      font-size: 2rem;
-      margin-top: 20px;
       font-weight: bold;
-      color: #222;
+      box-shadow: 0 5px #666;
     }
+    .btn-orange { background-color: #ff9800; box-shadow: 0 5px #e65100; }
+    .btn-green { background-color: #8bc34a; box-shadow: 0 5px #689f38; }
+    .btn-blue { background-color: #2196f3; box-shadow: 0 5px #1565c0; }
+
+    .menu-btn:active { transform: translateY(4px); box-shadow: none; }
+
+    #computerHand {
+      font-size: 7rem;
+      background: #f0f0f0;
+      border-radius: 50%;
+      width: 160px;
+      height: 160px;
+      line-height: 160px;
+      margin: 20px auto;
+      border: 6px solid #ddd;
+    }
+
+    /* かけ声のアニメーション */
+    #chantText {
+      font-size: 2.5rem;
+      font-weight: bold;
+      color: #e91e63;
+      height: 1.5em;
+      margin: 10px 0;
+    }
+
+    .bounce {
+      animation: bounce 0.4s ease infinite;
+    }
+    @keyframes bounce {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.2); }
+    }
+
+    .guide-text {
+      font-size: 1.3rem;
+      color: #ff6f00;
+      background: #fff9c4;
+      padding: 8px;
+      border-radius: 15px;
+      margin: 10px 0;
+    }
+
+    .buttons {
+      display: flex;
+      justify-content: space-around;
+      gap: 10px;
+      margin-top: 15px;
+    }
+
+    .hand-btn {
+      flex: 1;
+      max-width: 140px;
+      aspect-ratio: 3/4;
+      border: none;
+      border-radius: 20px;
+      cursor: pointer;
+      color: white;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 8px 0 rgba(0,0,0,0.2);
+      transition: opacity 0.3s;
+    }
+    .hand-btn span { font-size: 3.5rem; }
+    .hand-btn b { font-size: 1.2rem; }
+    .goo { background-color: var(--goo-color); }
+    .choki { background-color: var(--choki-color); }
+    .pa { background-color: var(--pa-color); }
+
+    .hand-btn:active { transform: translateY(4px); box-shadow: none; }
+    .hand-btn:disabled { opacity: 0.3; cursor: not-allowed; }
+
+    #result { font-size: 2.5rem; margin-top: 15px; font-weight: bold; min-height: 1.2em; }
+    .hidden { display: none; }
   </style>
 </head>
 <body>
-  <h1>ジャンケンをおぼえよう！</h1>
-  <p>👆 どれをだすと　かてるかな？</p>
-  <div id="computerHand">❓</div>
-  
-  <div class="buttons">
-    <button onclick="play('グー')">✊ グー</button>
-    <button onclick="play('チョキ')">✌️ チョキ</button>
-    <button onclick="play('パー')">🖐 パー</button>
+
+<div class="container">
+  <div id="menuScreen">
+    <h1>どっちで　あそぶ？</h1>
+    <button class="menu-btn btn-orange" onclick="showSetup('study')">📖 がくしゅう</button>
+    <button class="menu-btn btn-blue" onclick="showSetup('battle')">⚔️ しょうぶ</button>
   </div>
-  
-  <div id="result"></div>
 
-  <script>
-    const hands = ["グー", "チョキ", "パー"];
-    let computerChoice = "";
+  <div id="setupStudy" class="hidden">
+    <h1>なんもん　あそぶ？</h1>
+    <button class="menu-btn btn-green" onclick="startStudy(5)">5もん</button><br>
+    <button class="menu-btn btn-green" onclick="startStudy(10)">10もん</button><br>
+    <button class="menu-btn btn-green" onclick="startStudy(15)">15もん</button>
+  </div>
 
-    // 初期表示：ランダムに手を出す
-    function newRound() {
-      computerChoice = hands[Math.floor(Math.random() * hands.length)];
-      let emoji = computerChoice === "グー" ? "✊" : computerChoice === "チョキ" ? "✌️" : "🖐";
-      document.getElementById("computerHand").textContent = emoji + " " + computerChoice;
-      document.getElementById("result").textContent = "";
+  <div id="setupBattle" class="hidden">
+    <h1>だれと　たたかう？</h1>
+    <button class="menu-btn btn-blue" onclick="startBattle('kani')">🦀 かにさん✌️</button><br>
+    <button class="menu-btn btn-blue" onclick="startBattle('zou')">🐘 ぞうさん✊🖐️</button><br>
+    <button class="menu-btn btn-blue" onclick="startBattle('saru')">🐒 さるさん✊✌️🖐️</button>
+  </div>
+
+  <div id="gameScreen" class="hidden">
+    <div id="enemyName" style="font-weight: bold; color: #444;"></div>
+    <div style="font-size: 1.1rem;">いま <b id="currentCount">1</b> / <span id="totalCount"></span> もんめ</div>
+    
+    <div id="computerHand">❓</div>
+    <div id="chantText"></div>
+    
+    <div class="buttons" id="actionButtons">
+      <button class="hand-btn goo" id="btn-goo" onclick="play('グー')"><span>✊</span><b>ぐー</b></button>
+      <button class="hand-btn choki" id="btn-choki" onclick="play('チョキ')"><span>✌️</span><b>ちょき</b></button>
+      <button class="hand-btn pa" id="btn-pa" onclick="play('パー')"><span>🖐</span><b>ぱー</b></button>
+    </div>
+    <div id="result"></div>
+  </div>
+
+  <div id="endScreen" class="hidden">
+    <h1>やったね！おわり！</h1>
+    <div id="finalScore" style="font-size: 1.5rem; margin-bottom: 20px;"></div>
+    <button class="menu-btn btn-orange" onclick="location.reload()">もういちど　あそぶ</button>
+  </div>
+</div>
+
+<script>
+  const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  function playSound(type) {
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+    osc.connect(gain); gain.connect(audioCtx.destination);
+    if (type === 'win') {
+      osc.frequency.setValueAtTime(880, audioCtx.currentTime);
+      osc.frequency.exponentialRampToValueAtTime(1320, audioCtx.currentTime + 0.1);
+      gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.4);
+      osc.start(); osc.stop(audioCtx.currentTime + 0.4);
+    } else {
+      osc.frequency.setValueAtTime(440, audioCtx.currentTime);
+      gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.2);
+      osc.start(); osc.stop(audioCtx.currentTime + 0.2);
+    }
+  }
+
+  const hands = [
+    { name: "グー", emoji: "✊", wins: "パー" },
+    { name: "チョキ", emoji: "✌️", wins: "グー" },
+    { name: "パー", emoji: "🖐", wins: "チョキ" }
+  ];
+
+  let mode = "", enemyType = "", totalQuestions = 5, currentCount = 1, winCount = 0, isProcessing = false;
+
+  function showSetup(s) {
+    mode = s;
+    document.getElementById("menuScreen").classList.add("hidden");
+    document.getElementById(mode === 'study' ? "setupStudy" : "setupBattle").classList.remove("hidden");
+  }
+
+  function startStudy(n) {
+    totalQuestions = n;
+    document.getElementById("setupStudy").classList.add("hidden");
+    setupGame("がくしゅう");
+  }
+
+  function startBattle(t) {
+    enemyType = t;
+    totalQuestions = 5;
+    document.getElementById("setupBattle").classList.add("hidden");
+    const names = {kani: "🦀 かにさん✌️", zou: "🐘 ぞうさん✊✋", saru: "🐒 さるさん✊✌️🖐️"};
+    setupGame(names[t]);
+  }
+
+  function setupGame(title) {
+    document.getElementById("gameScreen").classList.remove("hidden");
+    document.getElementById("enemyName").textContent = title;
+    document.getElementById("totalCount").textContent = totalQuestions;
+    nextRound();
+  }
+
+  async function nextRound() {
+    if (currentCount > totalQuestions) { showEnd(); return; }
+    isProcessing = true;
+    toggleButtons(false);
+    document.getElementById("currentCount").textContent = currentCount;
+    document.getElementById("result").textContent = "";
+    document.getElementById("computerHand").textContent = "❓";
+    
+    const chant = document.getElementById("chantText");
+
+    if (mode === 'battle') {
+      // しょうぶモード：かけ声アニメーション
+      chant.textContent = "さいしょは…";
+      chant.className = "bounce";
+      await wait(1000);
+      chant.textContent = "ぐー！✊";
+      await wait(800);
+      chant.textContent = "ジャンケン…";
+      await wait(800);
+      chant.textContent = "ぽん！";
+      chant.className = "";
+    } else {
+      // がくしゅうモード：すぐに出す
+      chant.textContent = "なにを だすと かてる？";
+      const target = hands[Math.floor(Math.random() * hands.length)];
+      document.getElementById("computerHand").textContent = target.emoji;
+      document.getElementById("computerHand").dataset.answer = target.name;
     }
 
-    function play(playerChoice) {
-      let resultText = "";
-      if (playerChoice === computerChoice) {
-        resultText = "あいこ 😐";
-      } else if (
-        (playerChoice === "グー" && computerChoice === "チョキ") ||
-        (playerChoice === "チョキ" && computerChoice === "パー") ||
-        (playerChoice === "パー" && computerChoice === "グー")
-      ) {
-        resultText = "かち！ 🎉";
-      } else {
-        resultText = "まけ 😢";
-      }
-      document.getElementById("result").textContent = resultText;
-      setTimeout(newRound, 1500); // 1.5秒後に次の勝負
+    isProcessing = false;
+    toggleButtons(true);
+  }
+
+  function play(playerChoice) {
+    if (isProcessing) return;
+    isProcessing = true;
+    toggleButtons(false);
+
+    let computerHand;
+    if (mode === 'battle') {
+      if (enemyType === 'kani') computerHand = hands[1];
+      else if (enemyType === 'zou') computerHand = hands[Math.random() > 0.5 ? 0 : 2];
+      else computerHand = hands[Math.floor(Math.random() * hands.length)];
+    } else {
+      const ansName = document.getElementById("computerHand").dataset.answer;
+      computerHand = hands.find(h => h.name === ansName);
     }
 
-    // 最初の手
-    newRound();
-  </script>
+    document.getElementById("computerHand").textContent = computerHand.emoji;
+    const resDiv = document.getElementById("result");
+
+    if (playerChoice === computerHand.wins) {
+      resDiv.innerHTML = "<span style='color:#f44336'>かち！ 🎉</span>";
+      winCount++; playSound('win');
+      confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
+    } else if (playerChoice === computerHand.name) {
+      resDiv.innerHTML = "<span style='color:#9e9e9e'>あいこ 😐</span>";
+      playSound('draw');
+    } else {
+      resDiv.innerHTML = "<span style='color:#2196f3'>まけ 😢</span>";
+      playSound('draw');
+    }
+
+    setTimeout(() => {
+      currentCount++;
+      nextRound();
+    }, 2000);
+  }
+
+  function toggleButtons(enable) {
+    const btns = ["btn-goo", "btn-choki", "btn-pa"];
+    btns.forEach(id => document.getElementById(id).disabled = !enable);
+  }
+
+  function wait(ms) { return new Promise(resolve => setTimeout(resolve, ms)); }
+
+  function showEnd() {
+    document.getElementById("gameScreen").classList.add("hidden");
+    document.getElementById("endScreen").classList.remove("hidden");
+    document.getElementById("finalScore").textContent = `${totalQuestions}かいの うち ${winCount}かい かてたよ！`;
+    confetti({ particleCount: 200, spread: 100 });
+  }
+</script>
 </body>
 </html>
